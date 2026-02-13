@@ -106,8 +106,11 @@ def generate_ass_karaoke(
             ideal_start_ms = line_info.first_word_start - lead_time_ms
             
             if i == 0:
-                # 第一行直接使用理想起始时间
-                line_info.line_start_ms = ideal_start_ms
+                # 第一行：如果理想起始时间小于 0，则从 0 开始并缩短 lead_time
+                if ideal_start_ms < 0:
+                    line_info.line_start_ms = 0
+                else:
+                    line_info.line_start_ms = ideal_start_ms
             else:
                 # 检查与上一行的间隔
                 prev_line = lines[i - 1]
@@ -419,7 +422,7 @@ if __name__ == "__main__":
         "--midi",
         "-m",
         type=click.Path(exists=True),
-        default=Path("./vocals.mid"),
+        default=Path("./vocal.mid"),
         help="MIDI 文件路径",
     )
     @click.option(

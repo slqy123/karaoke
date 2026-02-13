@@ -511,8 +511,8 @@ def run_karaoke(
     "--midi",
     "-m",
     type=click.Path(exists=True),
-    default="./vocals.mid",
-    help="MIDI 文件路径（默认: ./vocals.mid）",
+    default="./vocal.mid",
+    help="MIDI 文件路径（默认: ./vocal.mid）",
 )
 @click.option(
     "--lyrics",
@@ -525,7 +525,7 @@ def run_karaoke(
     "--audio",
     "-a",
     type=click.Path(exists=True),
-    default=Path("./vocals.wav"),
+    default=Path("./vocal.wav"),
     help="音频文件路径（支持 mp3, wav, ogg 等，可选）",
 )
 @click.option(
