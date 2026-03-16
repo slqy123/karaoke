@@ -1,5 +1,6 @@
 from lark import Lark, Transformer, Token
 from pathlib import Path
+import re
 
 
 class Word:
@@ -7,7 +8,10 @@ class Word:
         self.text = text
         self.ruby: str | None = None
         self.mora: int = self.calc_mora(text)
-        self.base_mora = self.mora
+        self.base_mora = self.mora  # result of calc_mora，will not be modified by .\d+
+
+    def is_kanji(self):
+        return re.match(r'[\u4e00-\u9faf々]+$', self.text)
 
     def __str__(self):
         _text = self.text
@@ -39,6 +43,10 @@ class Word:
                 "ぇ",
                 "ぉ",
                 " ",
+                "「",
+                "」",
+                "『",
+                "』",
             ):
                 continue
             mora += 1
@@ -46,8 +54,24 @@ class Word:
 
 
 class Line:
-    def __init__(self, words):
-        self.words = words
+    def __init__(self, words: list[Word]):
+        self.words = []
+
+        while len(words):
+            w = words.pop()
+            self.words.insert(0, w)
+
+            if w.ruby is None or not w.is_kanji():
+                continue
+
+            while len(words):
+                w_next = words[-1]
+                if not (w_next.is_kanji() and w_next.ruby is None):
+                    break
+                words.pop()
+                w.text = w_next.text + w.text
+                # w.mora += w_next.mora
+                # w.base_mora += w_next.base_mora
 
     def total_mora(self):
         return sum(word.mora for word in self.words)
@@ -119,17 +143,18 @@ if __name__ == "__main__":
     example_text = Path("./lyrics.md").read_text()
     grammarv1 = Path(__file__).parent.joinpath("lyrics.lark").read_text()
     grammarv2 = Path(__file__).parent.joinpath("lyricsv2.lark").read_text()
-    resv1 = timeit(
-        'Lark(grammarv1, start="start").parse(example_text)',
-        globals=locals(),
-        number=10,
-    )
-    print(resv1)
-    resv2 = timeit(
-        'Lark(grammarv2, start="start").parse(example_text)',
-        globals=locals(),
-        number=10,
-    )
-    print(resv2)
-    # lyrics = LyricsTransformer().transform(res)
-    # print(lyrics)
+    # resv1 = timeit(
+    #     'Lark(grammarv1, start="start").parse(example_text)',
+    #     globals=locals(),
+    #     number=10,
+    # )
+    # print(resv1)
+    # resv2 = timeit(
+    #     'Lark(grammarv2, start="start").parse(example_text)',
+    #     globals=locals(),
+    #     number=10,
+    # )
+    # print(resv2)
+    res = Lark(grammarv1, start="start").parse(example_text)
+    lyrics = LyricsTransformer().transform(res)
+    print(lyrics)
