@@ -314,26 +314,37 @@ def get_karaoke_display(
 
     current_line_timings = line_timings_list[current_line_index]
 
-    # 确定当前已唱的词数
-    highlight_word_count = 0
-    for wt in current_line_timings.word_timings:
-        if current_time_ms >= wt.start_ms:
-            highlight_word_count += 1
-        else:
-            break
-
-    # 构建显示文本
+    # 构建显示文本：已唱词保持固定颜色，正在播放词按进度由浅到深，未唱词保持原样
     display_text = Text(justify="center")
 
-    # 添加已唱部分
-    passed_words = current_line_timings.word_timings[:highlight_word_count]
-    passed_text = "".join(wt.word.text for wt in passed_words)
-    display_text.append(passed_text, style=f"{passed_style} {passed_bg_style}")
+    gradient_start = (0, 140, 0)  # 深绿
+    gradient_end = (160, 255, 160)  # 浅绿（已唱词与该颜色保持一致，避免跳变）
+    passed_final_style = (
+        f"bold rgb({gradient_end[0]},{gradient_end[1]},{gradient_end[2]}) {passed_bg_style}"
+    )
 
-    # 添加未唱部分
-    upcoming_words = current_line_timings.word_timings[highlight_word_count:]
-    upcoming_text = "".join(wt.word.text for wt in upcoming_words)
-    display_text.append(upcoming_text, style=f"{upcoming_style} {upcoming_bg_style}")
+    for wt in current_line_timings.word_timings:
+        if current_time_ms >= wt.end_ms:
+            display_text.append(wt.word.text, style=passed_final_style)
+            continue
+
+        if wt.start_ms <= current_time_ms < wt.end_ms and wt.duration_ms > 0:
+            progress = (current_time_ms - wt.start_ms) / wt.duration_ms
+            progress = max(0.0, min(1.0, progress))
+            r = int(gradient_start[0] + (gradient_end[0] - gradient_start[0]) * progress)
+            g = int(gradient_start[1] + (gradient_end[1] - gradient_start[1]) * progress)
+            b = int(gradient_start[2] + (gradient_end[2] - gradient_start[2]) * progress)
+            display_text.append(
+                wt.word.text,
+                style=f"bold rgb({r},{g},{b}) {passed_bg_style}",
+            )
+            continue
+
+        if wt.duration_ms <= 0 and current_time_ms >= wt.start_ms:
+            display_text.append(wt.word.text, style=passed_final_style)
+            continue
+
+        display_text.append(wt.word.text, style=f"{upcoming_style} {upcoming_bg_style}")
 
     # 构建完整显示（包含上下文行）
     full_display = Text(justify="center")
