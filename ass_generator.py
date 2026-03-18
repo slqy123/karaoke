@@ -377,7 +377,7 @@ PlayResX: 1920
 PlayResY: 1080
 
 [Aegisub Project Garbage]
-Audio File: output.mp4
+Audio File: origin.wav
 Video File: output.mp4
 Video AR Mode: 4
 Video AR Value: 1.777778
