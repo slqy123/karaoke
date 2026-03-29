@@ -37,7 +37,7 @@ For others environment variables in `.envrc`, there is no need to override.
 If you have `direnv` installed, just run `direnv allow`. You can also maunally load them by `source .envrc`.
 
 ### 4. make video from cover.jpg
-Run `make video.mp4`.
+Run `make image2video`.
 
 ### 5. make karaoke subtitle and the final video
 
