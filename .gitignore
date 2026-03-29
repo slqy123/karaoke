@@ -10,3 +10,4 @@ wheels/
 # Virtual environments
 .venv
 /partial_movie_files/
+/example/video.ass
