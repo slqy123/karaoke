@@ -20,7 +20,7 @@ chmod +x *.py
 `(幾千)[いくせん].1` they can be used together
 
 ### 2. make `vocal.mid`
-It is recommended to use `wavetone` to make a midi file of the music.
+It is recommended to use [wavetone](https://ackiesound.ifdef.jp/download.html) to make a midi file of the music.
 
 ### 3. edit `.envrc`
 
