@@ -243,7 +243,6 @@ def generate_karaoke_text(
         is_transparent = all(w in " 　" for w in word.text)  # 透明字符判断
 
         if durations_cs[i] == 0 and not is_transparent:
-            print(wt, word)
             # 需要借时长，优先从前面借
             borrowed = False
             for j in range(i - 1, -1, -1):
@@ -304,7 +303,8 @@ def generate_karaoke_text(
 
         # 处理 ruby 注音
         if word.ruby:
-            text = f"{text}|<{word.ruby}"
+            splitter = "|" if text == "#" else "|<"
+            text = f"{text}{splitter}{"".join(w.text for w in word.ruby.words)}"
 
         parts.append(f"{{\\k{duration_cs}}}{text}")
 
@@ -468,6 +468,7 @@ if __name__ == "__main__":
         lyrics_text = lyrics_path.read_text(encoding="utf-8")
         parse_tree = parser.parse(lyrics_text)
         lyrics_obj = LyricsTransformer().transform(parse_tree)
+        lyrics_obj.flatten_ruby()
 
         click.echo(f"[*] 解析到 {len(lyrics_obj.chapters)} 个章节")
 

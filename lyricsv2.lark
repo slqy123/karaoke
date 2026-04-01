@@ -1,32 +1,18 @@
-// 强制使用 LALR 解析器提速
-?start: _NEWLINES? document _NEWLINES?
+start: _NEWLINE? chapter (_NEWLINE? "---" "-"* _NEWLINE?  chapter)* _NEWLINE?
+chapter: line (_NEWLINE line)*
+line: (word|word_ruby|word_mora)+
 
-document: chapter (_divider chapter)*
-
-// 将横线定义为明确的 Token
-_divider: _NEWLINES _DIVIDER_MARK _NEWLINES
-
-chapter: line (_NEWLINES line)*
-
-// 核心优化：将 line 展平，减少嵌套判断
-line: (word | word_ruby | word_mora)+
-
-// 细化 WORD 的定义，排除特定符号以减少歧义
-WORD: /[^#\n\[\]\(\)\.\-]+/
-// WORD: /[^#\n\[\]\(\)\.\-\s][^#\n\[\]\(\)\.\-]*/
-
-// word_mora 和 word_ruby 应该作为整体优先匹配
-word_mora: (word_ruby | word) "." INTEGER
-word_ruby: word "[" RUBY_TEXT "]"
 word: WORD | "(" WORD+ ")"
+word_ruby: word "[" line "]"
+word_mora: (word|word_ruby) "." INTEGER
 
-RUBY_TEXT: /[^\]\n]+/
+COMMENT: "#" /[^\n]/*
+WORD: /[^#\n\[\]\(\)\.-]/
+RUBY_TEXT: /[^\[\]]+/
+
 INTEGER: /\d+/
 
-_DIVIDER_MARK: "---"
-_NEWLINES: /[\n]+/
-COMMENT: "#" /[^\n]*/
+_NEWLINE: /\n+/
 
+%ignore /[\f\r\xa0]/
 %ignore COMMENT
-%ignore /[\f\r\xa0 \t]/
-

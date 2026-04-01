@@ -6,6 +6,7 @@ if (p := str(Path(__file__).parent)) not in sys.path:
     sys.path.append(p)
 import time
 from typing import Optional
+from rich import print
 from rich.console import Console
 from rich.live import Live
 from rich.text import Text
@@ -603,7 +604,7 @@ def cli_karaoke(
         mora_offset = calc_mora_offset(lyrics_obj.chapters, chapter)
         click.echo(f"[*] 已选择第 {chapter + 1} 章节")
         click.echo(f"[*] 章节前累计 mora 偏移: {mora_offset}")
-        print(selected_chapter)
+        print(str(selected_chapter))
 
         # 验证音频文件
         if audio_path and not audio_path.exists():
