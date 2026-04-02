@@ -1,5 +1,6 @@
-from mido import MidiFile, MidiTrack, Message, tempo2bpm
 from pathlib import Path
+
+from mido import MidiFile, tempo2bpm
 
 TICKS_PER_BEAT = 480
 BEAT4 = TICKS_PER_BEAT

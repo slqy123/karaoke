@@ -1,36 +1,39 @@
 #!/bin/python
-from pathlib import Path
 import sys
+from pathlib import Path
 
 if (p := str(Path(__file__).parent)) not in sys.path:
     sys.path.append(p)
+import os
+import select
+import sys
+import termios
+import threading
 import time
+import tty
 from typing import Optional
+
+import click
 from rich import print
 from rich.console import Console
 from rich.live import Live
-from rich.text import Text
 from rich.panel import Panel
-import click
-import threading
-import sys
-import select
-import termios
-import tty
+from rich.text import Text
 
-from parser import Chapter, Word
 from midi import Mora, read_midi
+from parser import Chapter, Word
 
 # 尝试导入音频播放库
 try:
     import sounddevice as sd
     import soundfile as sf
 
-    sd.default.device = None, sd.query_devices("pulse")["index"]
-
-    AUDIO_AVAILABLE = True
+    AUDIO_DEVICE = os.environ.get("AUDIO_DEVICE", "pulse")
+    sd.default.device = None, sd.query_devices(AUDIO_DEVICE)["index"]  # type: ignore
 except ImportError:
-    AUDIO_AVAILABLE = False
+    raise RuntimeError(
+        "sounddevice 和 soundfile 未安装，请运行: pip install sounddevice soundfile\n或者不使用 --audio 参数"
+    )
 
 
 class WordTiming:
@@ -74,11 +77,6 @@ class AudioPlayer:
         self.current_position_ms = 0
         self.play_thread: Optional[threading.Thread] = None
         self.should_stop = False
-
-        if not AUDIO_AVAILABLE:
-            raise RuntimeError(
-                "sounddevice 和 soundfile 未安装，请运行: pip install sounddevice soundfile\n或者不使用 --audio 参数"
-            )
 
         # 加载音频文件
         try:
@@ -144,7 +142,7 @@ class AudioPlayer:
             self.is_playing = False
             try:
                 sd.stop()
-            except:
+            except Exception:
                 pass
 
     def cleanup(self):
@@ -320,9 +318,7 @@ def get_karaoke_display(
 
     gradient_start = (0, 140, 0)  # 深绿
     gradient_end = (160, 255, 160)  # 浅绿（已唱词与该颜色保持一致，避免跳变）
-    passed_final_style = (
-        f"bold rgb({gradient_end[0]},{gradient_end[1]},{gradient_end[2]}) {passed_bg_style}"
-    )
+    passed_final_style = f"bold rgb({gradient_end[0]},{gradient_end[1]},{gradient_end[2]}) {passed_bg_style}"
 
     for wt in current_line_timings.word_timings:
         if current_time_ms >= wt.end_ms:
@@ -332,9 +328,15 @@ def get_karaoke_display(
         if wt.start_ms <= current_time_ms < wt.end_ms and wt.duration_ms > 0:
             progress = (current_time_ms - wt.start_ms) / wt.duration_ms
             progress = max(0.0, min(1.0, progress))
-            r = int(gradient_start[0] + (gradient_end[0] - gradient_start[0]) * progress)
-            g = int(gradient_start[1] + (gradient_end[1] - gradient_start[1]) * progress)
-            b = int(gradient_start[2] + (gradient_end[2] - gradient_start[2]) * progress)
+            r = int(
+                gradient_start[0] + (gradient_end[0] - gradient_start[0]) * progress
+            )
+            g = int(
+                gradient_start[1] + (gradient_end[1] - gradient_start[1]) * progress
+            )
+            b = int(
+                gradient_start[2] + (gradient_end[2] - gradient_start[2]) * progress
+            )
             display_text.append(
                 wt.word.text,
                 style=f"bold rgb({r},{g},{b}) {passed_bg_style}",

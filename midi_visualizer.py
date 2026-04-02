@@ -12,7 +12,6 @@ import numpy as np
 
 from midi import Mora, read_midi
 
-
 _WORKER_STATE: dict[str, Any] | None = None
 
 # Shared gray palette for all note desaturation states.

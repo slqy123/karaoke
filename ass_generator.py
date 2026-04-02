@@ -1,14 +1,14 @@
 #!/bin/python
 import os
-from pathlib import Path
 import sys
+from pathlib import Path
 
 if (p := str(Path(__file__).parent)) not in sys.path:
     sys.path.append(p)
 
-from parser import Chapter, Lyrics, LyricsTransformer, parser
+from karaoke_renderer import chapter_to_timings
 from midi import read_midi
-from karaoke_renderer import chapter_to_timings, calc_mora_offset
+from parser import Lyrics, LyricsTransformer, parser
 
 # 借用时长时的最小保留时长（单位：厘秒）
 MIN_WORD_DURATION = 8

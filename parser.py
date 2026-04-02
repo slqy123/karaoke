@@ -1,6 +1,7 @@
-from lark import Lark, Transformer, Token
-from pathlib import Path
 import re
+from pathlib import Path
+
+from lark import Lark, Token, Transformer
 from rich import print
 
 
