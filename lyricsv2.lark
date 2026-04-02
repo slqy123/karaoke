@@ -1,14 +1,14 @@
 start: _NEWLINE? chapter (_NEWLINE? "---" "-"* _NEWLINE?  chapter)* _NEWLINE?
 chapter: line (_NEWLINE line)*
 line: (word|word_ruby|word_mora)+
+ruby_line: line ("," line)*
 
 word: WORD | "(" WORD+ ")"
-word_ruby: word "[" line "]"
+word_ruby: word "[" ruby_line "]"
 word_mora: (word|word_ruby) "." INTEGER
 
 COMMENT: "#" /[^\n]/*
-WORD: /[^#\n\[\]\(\)\.-]/
-RUBY_TEXT: /[^\[\]]+/
+WORD: /[^#\n\[\]\(\)\.\-\,]/
 
 INTEGER: /\d+/
 

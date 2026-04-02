@@ -71,6 +71,7 @@ class Line:
     def __init__(self, words: list[Word], is_ruby=False):
         self.words: list[Word] = []
         self.is_ruby = is_ruby
+        self.parts: list["Line"] = [self]
 
         while len(words):
             w = words.pop()
@@ -86,6 +87,15 @@ class Line:
                 words.pop()
                 w.text = w_next.text + w.text
                 # mora and base_mora is calculated by w.set_ruby
+    @classmethod
+    def from_ruby_lines(cls, ruby_lines: list["Line"]):
+        words = []
+        for ruby_line in ruby_lines:
+            words.extend(ruby_line.words)
+        _ = cls(words, is_ruby=True)
+        _.parts = ruby_lines
+        return _
+
 
     def total_mora(self, base=False):
         return sum(word.base_mora if base else word.mora for word in self.words)
@@ -103,19 +113,33 @@ class Line:
             if word.ruby is None or word.mora == 1 or not word.is_ruby_mora:
                 words_.append(word)
                 continue
-            print(f"Flattening ruby for word '{word.text}' with ruby '{word.ruby}'")
+            # print(f"Flattening ruby for word '{word.text}' with ruby '{word.ruby}'")
 
-            for i, w in enumerate(word.ruby.words):
-                text = word.text if i == 0 else "#"
-                w_ = Word(text)
-                w_.set_ruby(Line([w], is_ruby=True))
-                words_.append(w_)
+            for part_idx, part in enumerate(word.ruby.parts):
+                part_text = (
+                    word.text if len(word.ruby.parts) == 1 else word.text[part_idx]
+                )
+                for i, w in enumerate(part.words):
+                    text = ("#" * bool(part_idx != 0) + part_text) if i == 0 else "#"
+                    w_ = Word(text)
+                    w_.set_ruby(Line([w], is_ruby=True))
+                    words_.append(w_)
         self.words = words_
 
 
 class Chapter:
     def __init__(self, lines):
         self.lines = lines
+        self.verify_ruby()
+
+    def verify_ruby(self):
+        for line in self.lines:
+            for word in line.words:
+                if word.ruby is not None and len(word.ruby.parts) > 1:
+                    print(f"Verifying ruby for word '{word.text}' with ruby '{word.ruby}'")
+                    assert len(word.ruby.parts) == len(word.text), (
+                        "Ruby parts length must match word text length"
+                    )
 
     def __str__(self):
         return "\n".join(str(line) for line in self.lines)
@@ -140,6 +164,10 @@ class Lyrics:
 class LyricsTransformer(Transformer):
     def line(self, items):
         return Line(items)
+
+    def ruby_line(self, items):
+        assert all(isinstance(item, Line) for item in items)
+        return Line.from_ruby_lines(items)
 
     def word(self, items):
         return Word("".join(items))

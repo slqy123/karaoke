@@ -302,9 +302,15 @@ def generate_karaoke_text(
         text = word.text
 
         # 处理 ruby 注音
-        if word.ruby:
-            splitter = "|" if text == "#" else "|<"
-            text = f"{text}{splitter}{"".join(w.text for w in word.ruby.words)}"
+        if word.ruby is not None:
+            if text == '#':
+                split = "|"
+            elif text.startswith("#"):
+                split = "|"
+                text = text[1:]
+            else:
+                split = "|<"
+            text = f"{text}{split}{"".join(w.text for w in word.ruby.words)}"
 
         parts.append(f"{{\\k{duration_cs}}}{text}")
 
