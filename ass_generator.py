@@ -296,7 +296,10 @@ def generate_karaoke_text(
                 gap_ms = current_mora.start - prev_mora.end
                 if gap_ms > 0:
                     gap_cs = gap_ms // 10
-                    parts.append(f"{{\\k{gap_cs}}}")
+                    if "|" in parts[-1]:
+                        duration_cs += gap_cs
+                    else:
+                        parts.append(f"{{\\k{gap_cs}}}")
 
         # 添加词的卡拉OK标记
         text = word.text
