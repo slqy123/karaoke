@@ -43,6 +43,10 @@ Run `make image2video`.
 
 Run `make output-vocal.mp4`
 
-### 6. (optional) debug in terminal
+### 6. make midi visualizer
+
+Run `make output-visualizer`
+
+### 7. (optional) debug in terminal
 
 Run `make debug CHAPTER=<CHAPTER_INDEX>`.
