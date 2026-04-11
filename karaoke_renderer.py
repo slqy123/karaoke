@@ -1,4 +1,4 @@
-#!/bin/python
+#!/usr/bin/env python
 import sys
 from pathlib import Path
 
@@ -22,19 +22,6 @@ from rich.text import Text
 
 from midi import Mora, read_midi
 from parser import Chapter, Word
-
-# 尝试导入音频播放库
-try:
-    import sounddevice as sd
-    import soundfile as sf
-
-    AUDIO_DEVICE = os.environ.get("AUDIO_DEVICE", "pulse")
-    sd.default.device = None, sd.query_devices(AUDIO_DEVICE)["index"]  # type: ignore
-except ImportError:
-    raise RuntimeError(
-        "sounddevice 和 soundfile 未安装，请运行: pip install sounddevice soundfile\n或者不使用 --audio 参数"
-    )
-
 
 class WordTiming:
     """单个词的时间信息"""
@@ -633,4 +620,15 @@ def cli_karaoke(
 
 
 if __name__ == "__main__":
+    # 尝试导入音频播放库
+    try:
+        import sounddevice as sd
+        import soundfile as sf
+
+        AUDIO_DEVICE = os.environ.get("AUDIO_DEVICE", "pulse")
+        sd.default.device = None, sd.query_devices(AUDIO_DEVICE)["index"]  # type: ignore
+    except ImportError:
+        raise RuntimeError(
+            "sounddevice 和 soundfile 未安装，请运行: pip install sounddevice soundfile\n或者不使用 --audio 参数"
+        )
     cli_karaoke()
