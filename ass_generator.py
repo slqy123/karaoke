@@ -295,9 +295,11 @@ def generate_karaoke_text(
             if not current_mora.continous:
                 gap_ms = current_mora.start - prev_mora.end
                 if gap_ms > 0:
+                    # print("gaps found", word.text, word.ruby)
                     gap_cs = gap_ms // 10
-                    if "|" in parts[-1]:
-                        duration_cs += gap_cs
+                    if "|" in parts[-1] and word.text.startswith("#"):
+                        # duration_cs += gap_cs
+                        parts.append(f"{{\\k{gap_cs}}}#|")
                     else:
                         parts.append(f"{{\\k{gap_cs}}}")
 
